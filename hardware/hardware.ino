@@ -8,6 +8,18 @@
 #include <math.h>  // https://www.tutorialspoint.com/c_standard_library/math_h.htm 
 #include <ctype.h>
 
+#include <PubSubClient.h>
+#include <FastLED.h>
+#include "DHT.h"
+
+#define NUM_LEDS 7
+#define PIN_DATA 5
+#define DHTPIN 25
+#define DHTTYPE DHT11   // DHT 11
+
+DHT dht(DHTPIN, DHTTYPE);
+
+
 // ADD YOUR IMPORTS HERE
 
 
@@ -43,14 +55,14 @@
 
 
 // MQTT CLIENT CONFIG  
-static const char* pubtopic      = "620012345";                    // Add your ID number here
-static const char* subtopic[]    = {"620012345_sub","/elet2415"};  // Array of Topics(Strings) to subscribe to
-static const char* mqtt_server   = "local";         // Broker IP address or Domain name as a String 
+static const char* pubtopic      = "620169500";                    // Add your ID number here
+static const char* subtopic[]    = {"620169500_sub","/elet2415"};  // Array of Topics(Strings) to subscribe to
+static const char* mqtt_server   = "www.yanacreations.com";       // Broker IP address or Domain name as a String 
 static uint16_t mqtt_port        = 1883;
 
 // WIFI CREDENTIALS
-const char* ssid       = "YOUR_SSID";     // Add your Wi-Fi ssid
-const char* password   = "YOUR_PASSWORD"; // Add your Wi-Fi password 
+const char* ssid       = "MonaConnect";     // Add your Wi-Fi ssid
+const char* password   = ""; // Add your Wi-Fi password 
 
 
 
@@ -100,13 +112,31 @@ void setup() {
   Serial.begin(115200);  // INIT SERIAL  
 
   // INITIALIZE ALL SENSORS AND DEVICES
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(ledArray, NUM_LEDS);  // GRB ordering is assumed
   
-  /* Add all other necessary sensor Initializations and Configurations here */
+  Serial.println(F("DHTxx test!"));
 
+  dht.begin();
+  
+  for(int x=0; x<7; x++){
+      ledArray[x] = CRGB( 240, 0, 240); // R, G, B range for each value is 0 to 255
+      FastLED.setBrightness( 200 ); // Ranges from 0 to 255
+      FastLED.show(); // Send changes to LED array
+      vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+
+    // 3. ITERATIVELY, TURN OFF ALL REMAINING LED(s).
+    for(int x=0; x<NUM_LEDS; x++){
+      ledArray[x] = CRGB::Black;
+      FastLED.setBrightness( 200 );
+      FastLED.show();
+      vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+  /* Add all other necessary sensor Initializations and Configurations here */
 
   initialize();     // INIT WIFI, MQTT & NTP 
   // vButtonCheckFunction(); // UNCOMMENT IF USING BUTTONS INT THIS LAB, THEN ADD LOGIC FOR INTERFACING WITH BUTTONS IN THE vButtonCheck FUNCTION
- }
+}
   
 
 
@@ -136,38 +166,48 @@ void vButtonCheck( void * pvParameters )  {
 void vUpdate( void * pvParameters )  {
     configASSERT( ( ( uint32_t ) pvParameters ) == 1 );    
            
-    for( ;; ) {
-          // #######################################################
-          // ## This function must PUBLISH to topic every second. ##
-          // #######################################################
-   
-          // 1. Read Humidity and save in variable below
-          double h = 0;
-           
-          // 2. Read temperature as Celsius   and save in variable below
-          double t = 0;    
- 
+  for( ;; ) {
+    // #######################################################
+    // ## This function must PUBLISH to topic every second. ##
+    // #######################################################
 
-          if(isNumber(t)){
-              // ##Publish update according to ‘{"id": "student_id", "timestamp": 1702212234, "temperature": 30, "humidity":90, "heatindex": 30}’
+    // 1. Read Humidity and save in variable below
+    double h = dht.readHumidity();
+      
+    // 2. Read temperature as Celsius   and save in variable below
+    double t = dht.readTemperature();    
 
-              // 1. Create JSon object
-              
-              // 2. Create message buffer/array to store serialized JSON object
-              
-              // 3. Add key:value pairs to JSon object based on above schema
 
-              // 4. Seralize / Covert JSon object to JSon string and store in message array
-               
-              // 5. Publish message to a topic sobscribed to by both backend and frontend                
+    if(isNumber(t)){
+      // ##Publish update according to ‘{"id": "student_id", "timestamp": 1702212234, "temperature": 30, "humidity":90, "heatindex": 30}’
 
-          }
+      // 1. Create JSon object
+      JsonDocument doc; // Create JSon object
+      
+      // 2. Create message buffer/array to store serialized JSON object
+      char message[1100]  = {0};
+      
+      // 3. Add key:value pairs to JSon object based on above schema
+      doc["id"]         = "6200162206";
+      doc["timestamp"]  = getTimeStamp();
+      doc["temperature"]     = t;
+      doc["humidity"]       = h;
+      doc["heatindex"]       = convert_fahrenheit_to_Celsius(calcHeatIndex(convert_Celsius_to_fahrenheit(t), h));
 
-          
-            
-        vTaskDelay(1000 / portTICK_PERIOD_MS);  
+      // 4. Seralize / Covert JSon object to JSon string and store in message array
+      serializeJson(doc, message);
+        
+      // 5. Publish message to a topic sobscribed to by both backend and frontend
+      if(mqtt.connected() ){
+        publish(pubtopic, message);
+      }              
+
     }
+       
+    vTaskDelay(1000 / portTICK_PERIOD_MS);  
+  }
 }
+
 
  
 
@@ -180,7 +220,7 @@ unsigned long getTimeStamp(void) {
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  // ############## MQTT CALLBACK  ######################################
+    // ############## MQTT CALLBACK  ######################################
   // RUNS WHENEVER A MESSAGE IS RECEIVED ON A TOPIC SUBSCRIBED TO
   
   Serial.printf("\nMessage received : ( topic: %s ) \n",topic ); 
@@ -239,16 +279,19 @@ bool publish(const char *topic, const char *payload){
 //***** Complete the util functions below ******
 
 double convert_Celsius_to_fahrenheit(double c){    
-    // CONVERTS INPUT FROM °C TO °F. RETURN RESULTS     
+    // CONVERTS INPUT FROM °C TO °F. RETURN RESULTS  
+     return (9/5)*c+32;        
 }
 
 double convert_fahrenheit_to_Celsius(double f){    
-    // CONVERTS INPUT FROM °F TO °C. RETURN RESULT    
+    // CONVERTS INPUT FROM °F TO °C. RETURN RESULT   
+     return (f-32)*5/9;   
 }
 
 double calcHeatIndex(double Temp, double Humid){
     // CALCULATE AND RETURN HEAT INDEX USING EQUATION FOUND AT https://byjus.com/heat-index-formula/#:~:text=The%20heat%20index%20formula%20is,an%20implied%20humidity%20of%2020%25
-  
+     return -42.379 + (2.04901523 * Temp) + (10.14333127 * Humid) - (0.22475541 * Temp * Humid) - (0.00683783 * Temp * Temp) - (0.05481717 * Humid * Humid) + (0.00122874 * Temp * Temp * Humid) + (0.00085282 * Temp * Humid * Humid) - (0.00000199 * Temp * Temp * Humid * Humid);
+
 }
  
 

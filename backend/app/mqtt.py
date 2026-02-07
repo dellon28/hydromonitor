@@ -16,7 +16,7 @@ class MQTT:
     ID = f"IOT_B_{randint(1,1000000)}"
 
     #  1. DEFINE ALL TOPICS TO SUBSCRIBE TO. BELOW ARE SOME EXAMPLES. YOUR ARE REQUIRED TO CHANGE THESE TO TOPICS THAT FITS YOUR USE CASE
-    sub_topics = [("620012345_pub", 0), ("620012345", 0), ("620012345_sub", 0)] #  A list of tuples of (topic, qos). Both topic and qos must be present in the tuple.
+    sub_topics = [("620169500_pub", 0), ("620169500", 0), ("620169500_sub", 0)] #  A list of tuples of (topic, qos). Both topic and qos must be present in the tuple.
 
 
     def __init__(self,mongo):
@@ -32,7 +32,8 @@ class MQTT:
         self.client.on_disconnect   = self.on_disconnect
         self.client.on_subscribe    = self.on_subscribe
 
-
+        self.client.message_callback_add("620169500", self.update)
+       
         # 3. REGISTER CALLBACK FUNCTION(S) FOR EACH TOPIC USING THE self.client.message_callback_add("topic",self.function) FUNCTION
         # WHICH TAKES A TOPIC AND THE NAME OF THE CALLBACK FUNCTION YOU HAVE CREATED FOR THIS SPECIFIC TOPIC
 
@@ -81,14 +82,20 @@ class MQTT:
             print("MQTT: Unexpected Disconnection.")
    
 
-    # 2. DEFINE CALLBACK FUNCTIONS(S) BELOW FOR EACH TOPIC(S) THE BACKEND SUBSCRIBES TO 
+    # 2. DEFINE CALLBACK FUNCTIONS(S) BELOW FOR EACH TOPIC(S) THE BACKEND SUBSCRIBES TO
+
+    def update(self, client, userdata, msg):
+        '''Process messages from Hardware'''
+        try:
+            topic = msg.topic
+            payload = msg.payload.decode("utf-8")
+            # print(payload) # UNCOMMENT WHEN DEBUGGING
+            # ADD YOUR CODE HERE TO PROCESS MESSAGE
+            update = loads(payload) # CONVERT FROM JSON STRING TO JSON OBJECT
+            self.mongo.addUpdate(update) # INSERT INTO DATABASE
+        except Exception as e:
+            print(f"MQTT: UPDATE Error - {str(e)}")
      
-
-
-     
-
-
-
 
 
 
