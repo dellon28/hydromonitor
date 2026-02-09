@@ -32,7 +32,7 @@ class MQTT:
         self.client.on_disconnect   = self.on_disconnect
         self.client.on_subscribe    = self.on_subscribe
 
-        self.client.message_callback_add("620169500", self.update)
+        self.client.message_callback_add("620169500", self.update) # ADD YOUR CALLBACK FUNCTION FOR THIS TOPIC
        
         # 3. REGISTER CALLBACK FUNCTION(S) FOR EACH TOPIC USING THE self.client.message_callback_add("topic",self.function) FUNCTION
         # WHICH TAKES A TOPIC AND THE NAME OF THE CALLBACK FUNCTION YOU HAVE CREATED FOR THIS SPECIFIC TOPIC
@@ -40,7 +40,7 @@ class MQTT:
          
 
         # 4. UPDATE MQTT SERVER AND PORT INFORMATION BELOW
-        self.client.connect_async("localhost", 1883, 60)
+        self.client.connect_async("www.yanacreations.com", 1883, 60)
        
 
 
