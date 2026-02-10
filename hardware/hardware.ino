@@ -38,15 +38,15 @@
  
 
 // DEFINE VARIABLES
-#define ARDUINOJSON_USE_DOUBLE      1 
+#define ARDUINOJSON_USE_DOUBLE  1 
 #define NUM_LEDS 7
 
-#define DATA_PIN 33
+#define DATA_PIN 27
 //#define CLOCK_PIN 13
 
 // DEFINE THE CONTROL PINS FOR THE DHT22
-#define DHTPIN 25
-#define DHTTYPE DHT11
+#define DHTPIN 26
+#define DHTTYPE DHT22
 
 
 
@@ -58,8 +58,8 @@ static const char* mqtt_server   = "www.yanacreations.com";         // Broker IP
 static uint16_t mqtt_port        = 1883;
 
 // WIFI CREDENTIALS
-const char* ssid       = "MonaConnect";     // Add your Wi-Fi ssid
-const char* password   = ""; // Add your Wi-Fi password 
+const char* ssid       = "Lenovo Tab M11";     // Add your Wi-Fi ssid
+const char* password   = "13245768"; // Add your Wi-Fi password 
 
 
 
@@ -174,7 +174,7 @@ void vUpdate( void * pvParameters )  {
       
     // 2. Read temperature as Celsius   and save in variable below
     double t = dht.readTemperature();    
-
+    Serial.println(h,t);
 
     if(isNumber(t)){
       // ##Publish update according to ‘{"id": "student_id", "timestamp": 1702212234, "temperature": 30, "humidity":90, "heatindex": 30}’
@@ -307,7 +307,7 @@ double convert_fahrenheit_to_Celsius(double f){
 double calcHeatIndex(double Temp, double Humid){
   // CALCULATE AND RETURN HEAT INDEX USING EQUATION FOUND AT https://byjus.com/heat-index-formula/#:~:text=The%20heat%20index%20formula%20is,an%20implied%20humidity%20of%2020%25
   return -42.379 + (2.04901523 * Temp) + (10.14333127 * Humid) - (0.22475541 * Temp * Humid) - (0.00683783 * Temp * Temp) - (0.05481717 * Humid * Humid) + (0.00122874 * Temp * Temp * Humid) + (0.00085282 * Temp * Humid * Humid) - (0.00000199 * Temp * Temp * Humid * Humid);
-  
+  //Serial.println("readings taken");
 }
  
 
