@@ -30,7 +30,9 @@ def get_all(start,end):
     '''RETURNS ALL THE DATA FROM THE DATABASE THAT EXIST IN BETWEEN THE START AND END TIMESTAMPS'''
    
     if request.method == "GET":
-        '''Add your code here to complete this route'''
+        file2 = mongo.db.climo.find( {"timestamp": {"$gte": start, "$lte": end}}, {"_id": 0} )
+        data = list(file2)
+        
 
     # FILE DATA NOT EXIST
     return jsonify({"status":"not found","data":[]})
@@ -40,9 +42,11 @@ def get_all(start,end):
 @app.route('/api/mmar/temperature/<start>/<end>', methods=['GET']) 
 def get_temperature_mmar(start,end):   
     '''RETURNS MIN, MAX, AVG AND RANGE FOR TEMPERATURE. THAT FALLS WITHIN THE START AND END DATE RANGE'''
-   
+    Tstats=temperatureMMAR(start, end)
     if request.method == "GET": 
-        '''Add your code here to complete this route'''
+         data = list(Tstats)
+         return jsonify({"status":"success","data":data})
+       
 
     # FILE DATA NOT EXIST
     return jsonify({"status":"not found","data":[]})
@@ -54,9 +58,11 @@ def get_temperature_mmar(start,end):
 @app.route('/api/mmar/humidity/<start>/<end>', methods=['GET']) 
 def get_humidity_mmar(start,end):   
     '''RETURNS MIN, MAX, AVG AND RANGE FOR HUMIDITY. THAT FALLS WITHIN THE START AND END DATE RANGE'''
-   
+    Hstats=humidityMMAR(start, end)
     if request.method == "GET": 
-        '''Add your code here to complete this route'''
+        data = list(Hstats)
+        return jsonify({"status":"success","data":data})
+        
 
     # FILE DATA NOT EXIST
     return jsonify({"status":"not found","data":[]})
@@ -68,6 +74,9 @@ def get_humidity_mmar(start,end):
 @app.route('/api/frequency/<variable>/<start>/<end>', methods=['GET']) 
 def get_freq_distro(variable,start,end):   
     '''RETURNS FREQUENCY DISTRIBUTION FOR SPECIFIED VARIABLE'''
+    if request.method == "GET":
+        FreqDistro=frequencyDistro(variable,start, end)
+        return jsonify({"status":"success","data":FreqDistro})
    
     if request.method == "GET": 
         '''Add your code here to complete this route'''         
