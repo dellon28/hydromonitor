@@ -1,199 +1,256 @@
 <template>
-  <v-container fluid class="bg-surface d-flex justify-center">
-    <div id="graph-container" class="pa-5">
-      <v-row>
-        <v-col cols="12" md="9">
-          <figure class="highcharts-figure">
-            <div id="container"></div>
-          </figure>
-        </v-col>
-
-        <v-col cols="12" md="3">
-          <v-card class="mb-2" max-width="500px" color="primaryContainer">
-            <v-card-subtitle class="text-h6 mt-2">Temperature</v-card-subtitle>
-            <v-card-item>
-              <span class="text-h3 text-onPrimaryContainer">
-                {{ temperature  }}
-              </span>
-            </v-card-item>
-          </v-card>
-
-          <v-card class="mb-2" max-width="500px" color="secondaryContainer">
-            <v-card-subtitle class="text-h6 mt-2">Heat Index (Feels like)</v-card-subtitle>
-            <v-card-item>
-              <span class="text-h3 text-onSecondaryContainer">
-                {{ heatindex  }}
-              </span>
-            </v-card-item>
-          </v-card>
-
-          <v-card class="mb-2" max-width="500px" color="tertiaryContainer">
-            <v-card-subtitle class="text-h6 mt-2">Humidity</v-card-subtitle>
-            <v-card-item>
-              <span class="text-h3 text-onTertiaryContainer">
-                {{ humidity }}
-              </span>
-            </v-card-item>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-row justify="start">
-        <v-col cols="12" md="9">
-          <figure class="highcharts-figure">
-            <div id="container1"></div>
-          </figure>
-        </v-col>
-      </v-row>
-    </div>
-  </v-container>
+    <v-container bg-color="light-blue" fluid align="center">
+        <v-row style="max-width: 1200px;">
+            <v-col cols="9">
+                <figure class="highcharts-figure">
+                    <div id="container"></div>
+                </figure>
+            </v-col>
+            <v-col cols="3">
+                <v-card class="mb-5" max-width="500" color="primaryContainer" subtitle="Temperature">
+                    <v-card-item><span class="text-h3 text-onPrimaryContainer">{{ temperature }}</span></v-card-item>
+                </v-card>
+                <v-card class="mb-5" max-width="500" color="tertiaryContainer" subtitle="Heat Index (Feels like)">
+                    <v-card-item><span class="text-h3 text-onTertiaryContainer">{{ heatindex }}</span></v-card-item>
+                </v-card>
+                <v-card class="mb-5" max-width="500" color="secondaryContainer" subtitle="Humidity">
+                    <v-card-item><span class="text-h3 text-onSecondaryContainer">{{ humidity }}</span></v-card-item>
+                </v-card>
+            </v-col>
+        </v-row>
+        <v-row style="max-width: 1200px;" justify="start">
+            <v-col cols="9">
+                <figure class="highcharts-figure">
+                    <div id="container1"></div>
+                </figure>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+/** JAVASCRIPT HERE */
+
+// IMPORTS
+import { ref,reactive,watch ,onMounted,onBeforeUnmount,computed } from "vue";  
+import { useRoute ,useRouter } from "vue-router";
+import { useMqttStore } from '@/store/mqttStore'; // Import Mqtt Store
+import { useAppStore } from "@/store/appStore";
+import { storeToRefs } from "pinia";
+
+// Highcharts, Load the exporting module and Initialize exporting module.
 import Highcharts from 'highcharts';
 import more from 'highcharts/highcharts-more';
 import Exporting from 'highcharts/modules/exporting';
+ 
+ 
+// VARIABLES
+const router      = useRouter();
+const route       = useRoute();
+const Mqtt = useMqttStore();
+const AppStore = useAppStore();
+const { payload, payloadTopic } = storeToRefs(Mqtt);
+const tempHiChart = ref(null); // Chart object
+const humidityChart = ref(null); // Chart object
+const points = ref(10); // Specify the quantity of points to be shown on the live graph simultaneously.
+const shift = ref(false); // Delete a point from the left side and append a new point to the right side of the graph.
 
-// Initialize Highcharts modules
-more(Highcharts);
-Exporting(Highcharts);
+const CreateCharts = async () => {
 
-// --- REFS & STATE ---
-const tempHiChart = ref(null);
-const points = ref(10);
-const shift = ref(false);
+    // TEMPERATURE CHART
+    tempHiChart.value = Highcharts.chart('container', {
+        chart: { 
+            zoomType: 'x',
+            backgroundColor: '#1e1e1e'  // Dark background
+        },
+        title: { 
+            text: 'Temperature Analysis (Live)',
+            align: 'left',
+            style: { color: '#FFFFFF' }  // White title text
+        },
+        yAxis: {
+            title: { 
+                text: '°C',
+                style: { color: '#FFFFFF' } // White axis label
+            },
+            labels: { 
+                format: '{value}°C',
+                style: { color: '#FFFFFF' }  // White labels
+            },
+            gridLineColor: '#444444' // Dark gray grid lines
+        },
+        xAxis: {
+            type: 'datetime',
+            title: { 
+                text: '',
+                style: { color: '#FFFFFF' }  // White axis label
+            },
+            labels: { style: { color: '#FFFFFF' } },  // White text
+            gridLineColor: '#444444' // Dark gray grid lines
+        },
+        tooltip: { 
+            shared: true,
+            backgroundColor: '#2b2b2b', // Dark tooltip background
+            style: { color: '#FFFFFF' } // White tooltip text
+        },
+        legend: {
+            itemStyle: { color: '#FFFFFF' } // White legend text
+        },
+        series: [
+            {
+                name: 'Temperature',
+                type: 'spline',
+                data: [],
+                turboThreshold: 0,
+                color: '#FF9999', // Muted pink (matches image)
+                lineWidth: 2 // Slightly thicker line
+            },
+            {
+                name: 'Heat Index',
+                type: 'spline',
+                data: [],
+                turboThreshold: 0,
+                color: '#FFC0CB', // Light pink (matches image)
+                lineWidth: 2
+            } 
+        ],
+    });
 
-
-
-const payload = ref(null); 
-
-// --- COMPUTED ---
-const temperature = computed(() => {
-  return payload.value ? `${payload.value.temperature.toFixed(2)} °C` : null;
-});
-
-const humidity = computed(() => {
-  return payload.value ? `${payload.value.humidity.toFixed(2)} %` : null;
-});
-
-const heatindex = computed(() => {
-  return payload.value ? `${payload.value.heatindex.toFixed(2)} °C` : null;
-});
-
-// --- FUNCTIONS ---
-const CreateCharts = () => {
-  tempHiChart.value = Highcharts.chart('container', {
-    chart: { zoomType: 'x' },
-    title: { text: 'Air Temperature and Heat Index Analysis', align: 'left' },
-    yAxis: {
-      title: { text: 'Degrees Celsius', style: { color: '#000000' } },
-      labels: { format: '{value} °C' }
-    },
-    xAxis: {
-      type: 'datetime',
-      title: { text: 'Time', style: { color: '#000000' } },
-    },
-    tooltip: { shared: true },
-    series: [
-      {
-        name: 'Temperature',
-        type: 'spline',
-        data: [],
-        color: Highcharts.getOptions().colors[0]
-      },
-      {
-        name: 'Heat Index',
-        type: 'spline',
-        data: [],
-        color: Highcharts.getOptions().colors[3]
-      }
-    ],
-  });
-
-tempHiChart.value = Highcharts.chart('container1', {
-    chart: { zoomType: 'x' },
-    title: { text: 'Humidity Analysis', align: 'left' },
-    yAxis: {
-      title: { text: 'Degrees Celsius', style: { color: '#000000' } },
-      labels: { format: '{value} °C' }
-    },
-    xAxis: {
-      type: 'datetime',
-      title: { text: 'Time', style: { color: '#000000' } },
-    },
-    tooltip: { shared: true },
-    series: [
-      {
-        name: 'Humidity',
-        type: 'spline',
-        data: [],
-        color: Highcharts.getOptions().colors[0]
-      },
-      {
-        name: 'Heat Index',
-        type: 'spline',
-        data: [],
-        color: Highcharts.getOptions().colors[3]
-      }
-    ],
-  });
+    // HUMIDITY CHART
+    humidityChart.value = Highcharts.chart('container1', {
+        chart: { 
+            zoomType: 'x',
+            backgroundColor: '#1e1e1e'  // Dark background
+        },
+        title: { 
+            text: 'Humidity Analysis (Live)',
+            align: 'left',
+            style: { color: '#FFFFFF' }  // White title text
+        },
+        yAxis: {
+            title: { 
+                text: 'Humidity (%)',
+                style: { color: '#FFFFFF' } // White axis label
+            },
+            labels: { 
+                format: '{value}%',
+                style: { color: '#FFFFFF' }  // White labels
+            },
+            gridLineColor: '#444444' // Dark gray grid lines
+        },
+        xAxis: {
+            type: 'datetime',
+            title: { 
+                text: '',
+                style: { color: '#FFFFFF' }  // White axis label
+            },
+            labels: { style: { color: '#FFFFFF' } },  // White text
+            gridLineColor: '#444444' // Dark gray grid lines
+        },
+        tooltip: { 
+            shared: true,
+            backgroundColor: '#2b2b2b', // Dark tooltip background
+            style: { color: '#FFFFFF' } // White tooltip text
+        },
+        legend: {
+            itemStyle: { color: '#FFFFFF' } // White legend text
+        },
+        series: [
+            {
+                name: 'Humidity',
+                type: 'spline',
+                data: [],
+                turboThreshold: 0,
+                color: '#00BFFF', // Light blue color for humidity
+                lineWidth: 2 // Slightly thicker line
+            }
+        ],
+    });
 
 };
 
-// --- LIFECYCLE ---
-onMounted(() => {
-  CreateCharts();
-  
-  // Note: Ensure Mqtt is imported
-  if (typeof Mqtt !== 'undefined') {
-    Mqtt.connect();
-    setTimeout(() => {
-      Mqtt.subscribe("620169500");
-    }, 3000);
-  }
-});
-
-onBeforeUnmount(() => {
-  // Cleanup logic if Mqtt needs manual disconnection
-});
-
-// --- WATCHERS ---
-watch(payload, (data) => {
-  if (data && tempHiChart.value) {
-    if (points.value > 0) {
-      points.value--;
-    } else {
-      shift.value = true;
+const updateLineCharts = async ()=>{
+    if(!!start.value && !!end.value){
+        // Convert output from Textfield components to 10 digit timestamps
+        let startDate = new Date(start.value).getTime() / 1000;
+        let endDate = new Date(end.value).getTime() / 1000;
+        // Fetch data from backend
+        const data = await AppStore.getAllInRange(startDate,endDate);
+        // Create arrays for each plot
+        let temperature = [];
+        let heatindex = [];
+        let humidity = [];
+        // Iterate through data variable and transform object to format recognized by highcharts
+        data.forEach(row => {
+            temperature.push({"x": row.timestamp * 1000, "y": parseFloat(row.temperature.toFixed(2)) });
+            heatindex.push({ "x": row.timestamp * 1000,"y": parseFloat(row.heatindex.toFixed(2)) });
+            humidity.push({ "x": row.timestamp * 1000,"y": parseFloat(row.humidity.toFixed(2)) });
+        });
+        // Add data to Temperature and Heat Index chart
+        tempHiChart.value.series[0].setData(temperature);
+        tempHiChart.value.series[1].setData(heatindex);
+        humidityChart.value.series[0].setData(humidity);
     }
-    
-    const x = data.timestamp * 1000;
-    // Series 0: Temperature
-    tempHiChart.value.series[0].addPoint({ x, y: parseFloat(data.temperature.toFixed(2)) }, true, shift.value);
-    // Series 1: Heat Index (Corrected from humidity to match chart title)
-    tempHiChart.value.series[1].addPoint({ x, y: parseFloat(data.heatindex.toFixed(2)) }, true, shift.value);
-    // Update Humidity Chart
-    tempHiChart.value.series[2].addPoint({ x, y: parseFloat(data.humidity.toFixed(2)) }, true, shift.value);
-  }
+}
+
+// COMPUTED PROPERTIES
+const temperature = computed(()=>{
+    if(!!payload.value){
+        return `${payload.value.temperature.toFixed(2)} °C`;
+    }
 });
+
+const heatindex = computed(()=>{
+    if(!!payload.value){
+        return `${payload.value.heatindex.toFixed(2)} °C`;
+    }
+});
+
+const humidity = computed(()=>{
+    if(!!payload.value){
+        return `${payload.value.humidity.toFixed(2)} %`;
+    }
+});
+
+// FUNCTIONS
+onMounted(()=>{
+    // THIS FUNCTION IS CALLED AFTER THIS COMPONENT HAS BEEN MOUNTED
+    CreateCharts();
+
+    Mqtt.connect(); // Connect to Broker located on the backend
+
+    setTimeout( ()=>{
+        // Subscribe to each topic
+        // Mqtt.subscribe("topic1");
+        Mqtt.subscribe("620169500");
+    },3000);
+});
+
+
+onBeforeUnmount(()=>{
+    // THIS FUNCTION IS CALLED RIGHT BEFORE THIS COMPONENT IS UNMOUNTED
+    // unsubscribe from all topics
+    Mqtt.unsubcribeAll();
+});
+
+//Watchers
+watch(payload,(data)=> {
+    if(points.value > 0){ points.value -- ; }
+    else{ shift.value = true; }
+    tempHiChart.value.series[0].addPoint({y:parseFloat(data.temperature.toFixed(2)) ,x: data.timestamp * 1000 },true, shift.value);
+    tempHiChart.value.series[1].addPoint({y:parseFloat(data.heatindex.toFixed(2)) ,x: data.timestamp * 1000 },true, shift.value);
+    humidityChart.value.series[0].addPoint({y:parseFloat(data.humidity.toFixed(2)) ,x: data.timestamp * 1000 },true, shift.value);
+})
+
+
 </script>
 
+
 <style scoped>
-#graph-container {
-  width: 100%;
-  min-height: 600px;
-  background-color: #f5f5f5; /* Lightened background for readability */
-  border-radius: 8px;
-}
+/** CSS STYLE HERE */
+Figure {
+border: 2px solid black;
 
-.highcharts-figure {
-  margin: 0;
-  border: 1px solid #ddd;
-  background: white;
-}
-
-#container, #container1 {
-  width: 100%;
-  height: 400px;
 }
 </style>
+  

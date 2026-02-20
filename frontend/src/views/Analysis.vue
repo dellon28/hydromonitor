@@ -1,242 +1,510 @@
 <template>
-  <v-container fluid class="bg-surface">
-    <v-row justify="center">
-      <v-col cols="12" md="10">
-        <v-row>
-          <v-col cols="12" md="4">
-            <v-sheet class="pa-4" rounded="lg" border>
-              <p class="text-h6 mb-4">Enter date range for Analysis</p>
-              <v-text-field v-model="start" label="Start Date" type="date" density="compact" variant="solo-inverted" flat></v-text-field>
-              <v-text-field v-model="end" label="End Date" type="date" density="compact" variant="solo-inverted" flat></v-text-field>
-              <v-btn color="primary" variant="tonal" block @click="updateCards(); updateLineCharts();updateHistogramCharts();">Analyze</v-btn>
-            </v-sheet>
-          </v-col>
-
-          <v-col cols="12" md="4">
-            <v-card variant="outlined" color="primary" rounded="lg" class="pa-2">
-              <v-card-title>Temperature</v-card-title>
-              <v-chip-group class="justify-center">
-                <v-tooltip text="Min" location="bottom">
-                  
-                    <v-chip  color="primaryContainer" variant="flat">{{ temperature.min }}</v-chip>
-                  
+    <v-container fluid class="bg-surface">
+      <!-- First Row -->
+      <v-row class="p-1" style="max-width: 1200px;">
+        <!-- Column 1 -->
+        <v-col>
+          <v-sheet class="p-2" height="250">
+            <p>Enter date range for Analysis</p>
+            <v-divider></v-divider>
+  
+            <v-text-field
+              class="m-5"
+              label="Start date" 
+              type="date"
+              density="compact"
+              variant="solo-inverted"
+              flat
+              style="max-width: 300px;"
+              v-model="start"
+            ></v-text-field>
+  
+            <v-text-field
+              label="End date" 
+              type="date"
+              density="compact"
+              variant="solo-inverted"
+              flat
+              style="max-width: 300px;"
+              v-model="end"
+            ></v-text-field>
+  
+            <v-spacer></v-spacer>
+  
+            <v-btn class="text-caption" text="Analyze" color="primary" variant="tonal" @click="updateLineCharts();updateHistogramCharts();updateScatterPlots();updateCards();">
+            </v-btn>
+          </v-sheet>
+        </v-col>
+  
+        <!-- Column 2 (Temperature Card) -->
+        <v-col cols="3" align="center">
+          <v-card title="Temperature" width="250" variant="outlined" color="primary" density="compact" rounded="lg">
+            <v-card-item class="mb-n5">
+              <v-chip-group class="d-flex flex-row justify-center" color="primaryContainer" variant="flat">
+                <v-tooltip text="Min" location="start">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-chip v-bind="attrs" v-on="on">{{ temperature.min }}</v-chip>
+                  </template>
                 </v-tooltip>
-                <v-tooltip text="Max" location="bottom">
-                  
-                    <v-chip  color="primaryContainer" variant="flat">{{ temperature.max }}</v-chip>
-                  
+                <v-tooltip text="Range" location="top">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-chip v-bind="attrs" v-on="on">{{ temperature.range }}</v-chip>
+                  </template>
                 </v-tooltip>
-                <v-tooltip text="Range" location="bottom">
-                  
-                    <v-chip  color="primaryContainer" variant="flat">{{ temperature.range }}</v-chip>
-                  
+                <v-tooltip text="Max" location="end">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-chip v-bind="attrs" v-on="on">{{ temperature.max }}</v-chip>
+                  </template>
                 </v-tooltip>
               </v-chip-group>
-              <v-card-text class="text-center">
-                <span class="text-h1 text-primary font-weight-bold">{{ temperature.avg }}</span>
-              </v-card-text>
-            </v-card>
-          </v-col>
-
-          <v-col cols="12" md="4">
-            <v-card variant="outlined" color="primary" rounded="lg" class="pa-2">
-              <v-card-title>Humidity</v-card-title>
-              <v-chip-group class="justify-center">
-                <v-tooltip text="Min" location="bottom">
-                  
-                    <v-chip  color="primaryContainer" variant="flat">{{ humidity.min }}</v-chip>
-                  
+            </v-card-item>
+            <v-card-item align="center">
+              <span class="text-h1 text-primary font-weight-bold">{{ temperature.avg }}</span>
+            </v-card-item>
+          </v-card>
+        </v-col>
+  
+        <!-- Column 3 (Humidity Card) -->
+        <v-col cols="3" align="center">
+          <v-card title="Humidity" width="250" variant="outlined" color="primary" density="compact" rounded="lg">
+            <v-card-item class="mb-n5">
+              <v-chip-group class="d-flex flex-row justify-center" color="primaryContainer" variant="flat">
+                <v-tooltip text="Min" location="start">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-chip v-bind="attrs" v-on="on">{{ humidity.min }}</v-chip>
+                  </template>
                 </v-tooltip>
-                <v-tooltip text="Max" location="bottom">
-                  
-                    <v-chip  color="primaryContainer" variant="flat">{{ humidity.max }}</v-chip>
-                 
+                <v-tooltip text="Range" location="top">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-chip v-bind="attrs" v-on="on">{{ humidity.range }}</v-chip>
+                  </template>
                 </v-tooltip>
-                <v-tooltip text="Range" location="bottom">
-                  
-                    <v-chip  color="primaryContainer" variant="flat">{{ humidity.range }}</v-chip>
-                  
+                <v-tooltip text="Max" location="end">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-chip v-bind="attrs" v-on="on">{{ humidity.max }}</v-chip>
+                  </template>
                 </v-tooltip>
               </v-chip-group>
-              <v-card-text class="text-center">
-                <span class="text-h1 text-primary font-weight-bold">{{ humidity.avg }}</span>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <v-row class="mt-5">
-          <v-col cols="12"><div id="container"></div></v-col>
-          <v-col cols="12"><div id="container0"></div></v-col>
-          <v-col cols="12"><div id="container1"></div></v-col>
-          <v-col cols="12" md="6"><div id="container2"></div></v-col>
-          <v-col cols="12" md="6"><div id="container3"></div></v-col>
-        </v-row>
-      </v-col>
-    </v-row>
-  </v-container>
+            </v-card-item>
+            <v-card-item align="center">
+              <span class="text-h1 text-primary font-weight-bold">{{ humidity.avg }}</span>
+            </v-card-item>
+          </v-card>
+        </v-col>
+      </v-row>
+  
+      <!-- Second Row (Charts) -->
+      <v-row style="max-width: 1200px;">
+        <v-col cols="12">
+          <figure class="highcharts-figure">
+            <div id="container"></div>
+          </figure>
+        </v-col>
+        <v-col cols="12">
+          <figure class="highcharts-figure">
+            <div id="container0"></div>
+          </figure>
+        </v-col>
+      </v-row>
+  
+      <!-- Third Row (Charts) -->
+      <v-row style="max-width: 1200px;">
+        <v-col class="border" cols="12">
+          <figure class="highcharts-figure">
+            <div id="container1"></div>
+          </figure>
+        </v-col>
+        <v-col cols="12">
+          <figure class="highcharts-figure">
+            <div id="container2"></div>
+          </figure>
+        </v-col>
+        <v-col cols="12">
+          <figure class="highcharts-figure">
+            <div id="container3"></div>
+          </figure>
+        </v-col>
+      </v-row>
+    </v-container>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+/** JAVASCRIPT HERE */
+
+// IMPORTS
+import { ref,reactive,watch ,onMounted,onBeforeUnmount,computed } from "vue";  
+import { useRoute ,useRouter } from "vue-router";
+import { useMqttStore } from '@/store/mqttStore'; // Import Mqtt Store
+import { useAppStore } from "@/store/appStore";
+import { storeToRefs } from "pinia";
+
+// Highcharts, Load the exporting module and Initialize exporting module.
 import Highcharts from 'highcharts';
-
+import more from 'highcharts/highcharts-more';
+import Exporting from 'highcharts/modules/exporting';
+ 
+ 
 // VARIABLES
-const start = ref("");
-const end = ref("");
-const temperature = reactive({ min: 0, max: 0, avg: 0, range: 0 });
-const humidity = reactive({ min: 0, max: 0, avg: 0, range: 0 });
+const router      = useRouter();
+const route       = useRoute();
+const Mqtt = useMqttStore();
+const AppStore = useAppStore();
+const { payload, payloadTopic } = storeToRefs(Mqtt);
+const tempHiChart = ref(null); // Chart object
+const humidChart = ref(null); // Chart object
+const histogramChart = ref(null); // Chart object
+const scatterPlot1 = ref(null); // Chart object
+const scatterPlot2 = ref(null); // Chart object
+const points = ref(10); // Specify the quantity of points to be shown on the live graph simultaneously.
+const shift = ref(false); // Delete a point from the left side and append a new point to the right side of the graph.
+const start   = ref("");
+const end    = ref("");
+const temperature = reactive({"min":0,"max":0,"avg":0,"range":0});
+const humidity = reactive({"min":0,"max":0,"avg":0,"range":0});
 
-// Chart refs to update data later
-const charts = reactive({});
+const CreateCharts = async () => {
 
-const updateCards = async () => {
-  if (!!start.value && !!end.value) {
-    let startDate = new Date(start.value).getTime() / 1000;
-    let endDate = new Date(end.value).getTime() / 1000;
-    
-    // Assuming AppStore is globally available or imported
-    const temp = await AppStore.getTemperatureMMAR(startDate, endDate);
-    const humid = await AppStore.getHumidityMMAR(startDate, endDate);
+    // TEMPERATURE CHART
+    tempHiChart.value = Highcharts.chart('container', {
+        chart: { zoomType: 'x' },
+        title: { text: 'Air Temperature and Heat Index Analysis', align: 'left' },
+        subtitle: { text: 'The heat index, also known as the "apparent temperature," is a measure that combines air temperature and relative humidity to assess how hot it feels to the human body. The relationship between heat index and air temperature is influenced by humidity levels. As humidity increases, the heat index also rises, making the perceived temperature higher than the actual air temperature.' },
+        yAxis: {
+            title: { text: 'Air Temperature & Heat Index' , style:{color:'#000000'}},
+            labels: { format: '{value} °C' }
+        },
+        xAxis: {
+            type: 'datetime',
+            title: { text: 'Time', style:{color:'#000000'} },
+        },
+        tooltip: { shared:true, 
+            pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
+        },
+        series: [
+            {
+                name: 'Temperature',
+                type: 'spline',
+                data: [],
+                turboThreshold: 0,
+                color: Highcharts.getOptions().colors[0]
+            },
+            {
+                name: 'Heat Index',
+                type: 'spline',
+                data: [],
+                turboThreshold: 0,
+                color: Highcharts.getOptions().colors[1]
+            } 
+        ],
+    });
 
-    temperature.max = temp[0].max.toFixed(1);
-    temperature.min = temp[0].min.toFixed(1);
-    temperature.avg = temp[0].avg.toFixed(1);
-    temperature.range = (temp[0].max - temp[0].min).toFixed(1);
+    humidChart.value = Highcharts.chart('container0', {
+        chart: { zoomType: 'x' },
+        title: { text: 'Humidity Analysis', align: 'left' },
+        subtitle: { text: 'This chart shows the humidity levels over time, which impacts the perceived temperature.' },
+        yAxis: {
+            title: { text: 'Humidity', style: { color: '#000000' } },
+            labels: { format: '{value} %' }
+        },
+        xAxis: {
+            type: 'datetime',
+            title: { text: 'Time', style: { color: '#000000' } },
+        },
+        tooltip: {
+            shared: true,
+            pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
+        },
+        series: [
+            {
+                name: 'Humidity',
+                type: 'spline',
+                data: [], // Replace with actual dynamic data
+                turboThreshold: 0,
+                color: Highcharts.getOptions().colors[0]
+            }
+        ],
+    });
 
-    humidity.max = humid[0].max.toFixed(1);
-    humidity.min = humid[0].min.toFixed(1);
-    humidity.avg = humid[0].avg.toFixed(1);
-    humidity.range = (humid[0].max - humid[0].min).toFixed(1);
-  }
+    histogramChart.value = Highcharts.chart('container1', {
+        chart: { zoomType: 'x' },
+        title: { text: 'Frequency Distribution Analysis', align: 'left' },
+        subtitle: {
+          text: 'This chart shows the frequency distribution of Temperature, Humidity, and Heat Index.'
+        },
+        xAxis: {
+          title: { text: 'Temperature Ranges (°C)' }
+        },
+        yAxis: {
+          title: { text: 'Frequency', style: { color: '#000000' } },
+          labels: { format: '{value}' }
+        },
+        tooltip: {
+          shared: true,
+          pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
+        },
+        series: [
+          {
+            name: 'Temperature',
+            type: 'column',
+            data: [], // Replace with actual data
+            color: Highcharts.getOptions().colors[0]
+          },
+          {
+            name: 'Humidity',
+            type: 'column',
+            data: [], // Replace with actual data
+            color: Highcharts.getOptions().colors[1]
+          },
+          {
+            name: 'Heat Index',
+            type: 'column',
+            data: [], // Replace with actual data
+            color: Highcharts.getOptions().colors[2]
+          }
+        ],
+    });
+
+    scatterPlot1.value = Highcharts.chart('container2', {
+        chart: { type: 'scatter', zoomType: 'x' },
+        title: { text: 'Temperature & Heat Index Correlation Analysis', align: 'left' },
+        subtitle: {
+          text: 'Visualize the relationship between Temperature and Heat Index as well as revealing patterns or trends in the data.'
+        },
+        xAxis: {
+          title: { text: 'Temperature' },
+          labels: { format: '{value} °C' },
+          startOnTick: true,
+          endOnTick: true,
+          showLastLabel: true
+        },
+        yAxis: {
+          title: { text: 'Heat Index' },
+          labels: { format: '{value} °C' },
+        },
+        tooltip: {
+          pointFormat: 'Temperature: {point.x} °C <br/> Heat Index: {point.y} °C'
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 2.5,
+                    symbol: 'circle',
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                jitter: {
+                    x: 0.005
+                }
+            }
+        },
+        series: [{
+          name: 'Analysis',
+          id: 'analysis',
+          data: [], // Use Humidity as x and Heat Index as y
+          marker: { symbol:'circle', radius: 5 }
+        }],
+    });
+
+    scatterPlot2.value = Highcharts.chart('container3', {
+        chart: { type: 'scatter', zoomType: 'x' },
+        title: { text: 'Humidity & Heat Index Correlation Analysis', align: 'left' },
+        subtitle: {
+          text: 'Visualize the relationship between Humidity and Heat Index as well as revealing patterns or trends in the data.'
+        },
+        xAxis: {
+          title: { text: 'Humidity' },
+          labels: { format: '{value} %' },
+          startOnTick: true,
+          endOnTick: true,
+          showLastLabel: true
+        },
+        yAxis: {
+          title: { text: 'Heat Index' },
+          labels: { format: '{value} °C' },
+        },
+        tooltip: {
+          pointFormat: 'Humidity: {point.x} % <br/> Heat Index: {point.y} °C'
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 2.5,
+                    symbol: 'circle',
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                jitter: {
+                    x: 0.005
+                }
+            }
+        },
+        series: [{
+          name: 'Analysis',
+          id: 'analysis',
+          data: [], // Use Humidity as x and Heat Index as y
+          marker: { symbol:'circle', radius: 5 }
+        }],
+    });
 };
 
 const updateLineCharts = async ()=>{
-if(!!start.value && !!end.value){
-    // Convert output from Textfield components to 10 digit timestamps
-    let startDate = new Date(start.value).getTime() / 1000;
-    let endDate = new Date(end.value).getTime() / 1000;
-    // Fetch data from backend
-    const data = await AppStore.getAllInRange(startDate,endDate);
-    // Create arrays for each plot
-    let temperature = [];
-    let heatindex = [];
-    let humidity = [];
-    // Iterate through data variable and transform object to format recognized by highcharts
-    data.forEach(row => {
-    temperature.push({"x": row.timestamp * 1000, "y": parseFloat(row.temperature.toFixed(2)) });
-    heatindex.push({ "x": row.timestamp * 1000,"y": parseFloat(row.heatindex.toFixed(2)) });
-    humidity.push({ "x": row.timestamp * 1000,"y": parseFloat(row.humidity.toFixed(2)) });
-    });
-    // Add data to Temperature and Heat Index chart
-    tempChart.value.series[0].setData(temperature);
-    tempChart.value.series[1].setData(heatindex);
-    tempChart.value.series[2].setData(humidity);
+    if(!!start.value && !!end.value){
+        // Convert output from Textfield components to 10 digit timestamps
+        let startDate = new Date(start.value).getTime() / 1000;
+        let endDate = new Date(end.value).getTime() / 1000;
+        // Fetch data from backend
+        const data = await AppStore.getAllInRange(startDate,endDate);
+        // Create arrays for each plot
+        let temperature = [];
+        let heatindex = [];
+        let humidity = [];
+        // Iterate through data variable and transform object to format recognized by highcharts
+        data.forEach(row => {
+            temperature.push({"x": row.timestamp * 1000, "y": parseFloat(row.temperature.toFixed(2)) });
+            heatindex.push({ "x": row.timestamp * 1000,"y": parseFloat(row.heatindex.toFixed(2)) });
+            humidity.push({ "x": row.timestamp * 1000,"y": parseFloat(row.humidity.toFixed(2)) });
+        });
+        // Add data to Temperature and Heat Index chart
+        tempHiChart.value.series[0].setData(temperature);
+        tempHiChart.value.series[1].setData(heatindex);
+        humidChart.value.series[0].setData(humidity);
     }
-    };
-
-const updateHistogramCharts = async () =>{
-// Retrieve Min, Max, Avg, Spread/Range for Column graph
-if(!!start.value && !!end.value){
-// 1. Convert start and end dates collected fron TextFields to 10 digit timestamps
-const startDate = new Date(start.value).getTime() / 1000;
-const endDate = new Date(end.value).getTime() / 1000;
-// Subsequently, create startDate and endDate variables and then save the respective timestamps in these variables
-// 2. Fetch data(temp, humid and hi) from backend by calling the getFreqDistro API functions for each
-const temp = await AppStore.getFreqDistro("temperature",startDate,endDate);
-const humid = await AppStore.getFreqDistro("humidity",startDate,endDate);
-const hi = await AppStore.getFreqDistro("heatindex",startDate,endDate);
-
-// 3. create an empty array for each variable (temperature, humidity and heatindex)
-// see example below
-let temperature = [];
-let humidity = [];
-let heatindex = [];
-// 4. Iterate through the temp variable, which contains temperature data fetched from the backend
-// transform the data to {"x": x_value,"y": y_value} format and then push it to the temperature array created previously
-// see example below
-temp.forEach(row => {
-temperature.push({"x": row["_id"],"y": row["count"]})
-});
-// 5. Iterate through the humid variable, which contains humidity data fetched from the backend
-// transform the data to {"x": x_value,"y": y_value} format and then push it to the humidity array created previously
-humid.forEach(row => {
-humidity.push({"x": row["_id"],"y": row["count"]})
-});
-// 6. Iterate through the hi variable, which contains heat index data fetched from the backend
-humid.forEach(row => {
-heatindex.push({"x": row["_id"],"y": row["count"]})
-});
-// transform the data to {"x": x_value,"y": y_value} format and then push it to the heatindex array created previously
-// 7. update series[0] for the histogram/Column chart with temperature data
-// see example below
-histogramChart.value.series[0].setData(temperature);
-// 8. update series[1] for the histogram/Column chart with humidity data
-// 9. update series[2] for the histogram/Column chart with heat index data
-histogramChart.value.series[1].setData(humidity);
-histogramChart.value.series[2].setData(heatindex);
-}
 }
 
+const updateHistogramCharts = async ()=>{
+    if(!!start.value && !!end.value){
+        // Convert output from Textfield components to 10 digit timestamps
+        let startDate = new Date(start.value).getTime() / 1000;
+        let endDate = new Date(end.value).getTime() / 1000;
+        // Fetch data from backend
+        const temp = await AppStore.getFreqDistro("temperature",startDate,endDate);
+        const humid = await AppStore.getFreqDistro("humidity",startDate,endDate);
+        const hi = await AppStore.getFreqDistro("heatindex",startDate,endDate);
+        // Create arrays for each plot
+        let temperature = [];
+        let heatindex = [];
+        let humidity = [];
 
-const initCharts = () => {
-  charts.tempHI = Highcharts.chart('container', {
-    chart: { type: 'line', zoomType: 'x' },
-    title: { text: 'Temperature and Heat Index Analysis', align: 'left' },
-    subtitle: { text: 'The heat index, also known as the "apparent temperature," is a measure that combines air temperature and relative humidity to assess how hot it feels to the human body. The relationship between heat index and air temperature is influenced by humidity levels. As humidity increases, the heat index also rises, making the perceived temperature higher than the actual air temperature',align: 'left'  },
-    xAxis: { type: 'datetime', title: { text: 'Time' } },
-    tooltip: { shared: true, pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'},
-    yAxis: { title: { text: 'Celsius (°C)' } },
-    series: [{ name: 'Temperature', data: [] }, { name: 'Heat Index', data: [] }]
-  });
+        temp.forEach(row => {
+            temperature.push({"x": row["_id"],"y": row["count"]})
+        });
+        humid.forEach(row => {
+            humidity.push({"x": row["_id"],"y": row["count"]})
+        });
+        hi.forEach(row => {
+            heatindex.push({"x": row["_id"],"y": row["count"]})
+        });
+        // Add data to Temperature and Heat Index chart
+        histogramChart.value.series[0].setData(temperature);
+        histogramChart.value.series[1].setData(heatindex);
+        histogramChart.value.series[2].setData(humidity);
+    }
+}
 
-  Highcharts.chart('container0', {
-    chart: { type: 'line', zoomType: 'x' },
-    title: { text: 'Humidity Analysis', align: 'left' },
-    xAxis: { type: 'datetime', title: { text: 'Time' } },
-    yAxis: { title: { text: 'Air Temperature & Heat Index', labels: { format: '{value}°C' } } },
-    series: [{ name: 'Humidity', data: [] }],
-    tooltip: { shared: true, pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'},
-  });
+const updateScatterPlots = async ()=>{
+    if(!!start.value && !!end.value){
+        // Convert output from Textfield components to 10 digit timestamps
+        let startDate = new Date(start.value).getTime() / 1000;
+        let endDate = new Date(end.value).getTime() / 1000;
+        // Fetch data from backend
+        const data = await AppStore.getAllInRange(startDate,endDate);
+        
+        
+        // Create arrays for each plot
+        let graph1 = [];
+        let graph2 = [];
 
-  Highcharts.chart('container1', {
-      chart: { type: 'column', zoomType: 'x' },
-    title: { text: 'Frequency Distribution Analysis', align: 'left' },
-    xAxis: { categories:["Temperature","Humidity","Heat Index"] },
-    yAxis: { title: { text: 'Values' } },
-    series: [{ name: 'Temperature', data: [] }, { name: 'Humidity', data: [] }, { name: 'Heat Index', data: [] }],
-  });
+        data.forEach(row => {
+            graph1.push([parseFloat(row.temperature.toFixed(2)),parseFloat(row.heatindex.toFixed(2))])
+            graph2.push([parseFloat(row.humidity.toFixed(2)),parseFloat(row.heatindex.toFixed(2))])
+        });
+        
+        // Add data to Temperature and Heat Index chart
+        scatterPlot1.value.series[0].setData(graph1);
+        scatterPlot2.value.series[0].setData(graph2);
+    }
+}
 
-  Highcharts.chart('container2', {
-    chart: { type: 'scatter' , zoomType: 'x'},
-    title: { text: 'Temperature & Heat Index Correlation Analysis', align: 'left' },
-    subtitle:{ text: 'Visualize the relationship between Temperature and Heat Index as well as revealing patterns',align: 'left' },
-    xAxis: { title: { text: 'Temperature (°C)', labels: { format: '{value}°C' } } },
-    yAxis: { title: { text: 'Heat Index (°C)', labels: { format: '{value}°C' }   } },
-    series: [{ name: 'Analysis', data: [] }],
-    tooltip: { pointFormat: 'Temperature: {point.x} °C <br/> Heat Index: {point.y} °C' }
-  });
+const updateCards = async () => {
+    // Retrieve Min, Max, Avg, Spread/Range
+    if(!!start.value && !!end.value){
+        // 1. Convert start and end dates collected fron TextFields to 10 digit timestamps
+        let startDate = new Date(start.value).getTime() / 1000;
+        let endDate = new Date(end.value).getTime() / 1000;
+        // 2. Fetch data from backend by calling the API functions
+        const temp = await AppStore.getTemperatureMMAR(startDate,endDate);
+        const humid = await AppStore.getHumidityMMAR(startDate,endDate);
 
-  Highcharts.chart('container3', {
-    chart: { type: 'scatter', zoomType: 'x' },
-    title: { text: 'Humidity & Heat Index Correlation', align: 'left' },
-    subtitle:{ text: 'Visualize the relationship between Humidity and Heat Index as well as revealing patterns', align: 'left' },
-    xAxis: { title: { text: 'Humidity (%)', labels: { format: '{value}%' } } },
-    yAxis: { title: { text: 'Heat Index (°C)', labels: { format: '{value}°C' }   } },
-    series: [{ name: 'Analysis', data: [] }]
-  });
-};
+        temperature.max = temp[0].max.toFixed(1);
+        //3. complete for min, avg and range
+        temperature.min = temp[0].min.toFixed(1);
+        temperature.avg = temp[0].avg.toFixed(1);
+        temperature.range = temp[0].range.toFixed(1);
+        //4. complete max, min, avg and range for the humidity variable
+        humidity.max = humid[0].max.toFixed(1);
+        //3. complete for min, avg and range
+        humidity.min = humid[0].min.toFixed(1);
+        humidity.avg = humid[0].avg.toFixed(1);
+        humidity.range = humid[0].range.toFixed(1);
+    }
+}
 
-onMounted(() => {
-  initCharts();
+// FUNCTIONS
+onMounted(()=>{
+    // THIS FUNCTION IS CALLED AFTER THIS COMPONENT HAS BEEN MOUNTED
+    CreateCharts();
+
+    Mqtt.connect(); // Connect to Broker located on the backend
+
+    setTimeout( ()=>{
+        // Subscribe to each topic
+        // Mqtt.subscribe("topic1");
+        Mqtt.subscribe("620169500");
+    },3000);
 });
+
+
+onBeforeUnmount(()=>{
+    // THIS FUNCTION IS CALLED RIGHT BEFORE THIS COMPONENT IS UNMOUNTED
+    // unsubscribe from all topics
+    Mqtt.unsubcribeAll();
+});
+
+/*watch(payload,(data)=> {
+    if(points.value > 0){ points.value -- ; }
+    else{ shift.value = true; }
+    tempHiChart.value.series[0].addPoint({y:parseFloat(data.temperature.toFixed(2)) ,x: data.timestamp * 1000 },true, shift.value);
+    tempHiChart.value.series[1].addPoint({y:parseFloat(data.heatindex.toFixed(2)) ,x: data.timestamp * 1000 },true, shift.value);
+    humidChart.value.series[0].addPoint({y:parseFloat(data.humidity.toFixed(2)) ,x: data.timestamp * 1000 },true, shift.value);
+})*/
+
+
 </script>
 
+
 <style scoped>
-.highcharts-figure { margin: 0; }
-#container, #container0, #container1, #container2, #container3 {
-  width: 100%;
-  height: 400px;
-  margin-bottom: 20px;
-}
+/** CSS STYLE HERE */
+
 </style>

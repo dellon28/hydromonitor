@@ -1,7 +1,7 @@
 <template>
-    <VContainer align="center" fluid>
+    <VContainer align-self="center" fluid>
         <VRow justify="center" style="max-width: 1200px;">
-            <VCol align="center">
+            <VCol align-self="center">
                 <v-sheet class="mb-1 w-100 rounded-lg" style="max-width: 800;" color="surface">
                     <v-card class="text-secondary" title="LED Controls" color="surface" subtitle="Recent settings" variant="tonal" flat></v-card>
                 </v-sheet>
