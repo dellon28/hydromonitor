@@ -227,6 +227,7 @@ onMounted(()=>{
 });
 
 
+
 onBeforeUnmount(()=>{
     // THIS FUNCTION IS CALLED RIGHT BEFORE THIS COMPONENT IS UNMOUNTED
     // unsubscribe from all topics

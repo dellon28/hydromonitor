@@ -165,208 +165,185 @@ const humidity = reactive({"min":0,"max":0,"avg":0,"range":0});
 const CreateCharts = async () => {
 
     // TEMPERATURE CHART
-    tempHiChart.value = Highcharts.chart('container', {
-        chart: { zoomType: 'x' },
-        title: { text: 'Air Temperature and Heat Index Analysis', align: 'left' },
-        subtitle: { text: 'The heat index, also known as the "apparent temperature," is a measure that combines air temperature and relative humidity to assess how hot it feels to the human body. The relationship between heat index and air temperature is influenced by humidity levels. As humidity increases, the heat index also rises, making the perceived temperature higher than the actual air temperature.' },
-        yAxis: {
-            title: { text: 'Air Temperature & Heat Index' , style:{color:'#000000'}},
-            labels: { format: '{value} °C' }
-        },
-        xAxis: {
-            type: 'datetime',
-            title: { text: 'Time', style:{color:'#000000'} },
-        },
-        tooltip: { shared:true, 
-            pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
-        },
-        series: [
-            {
-                name: 'Temperature',
-                type: 'spline',
-                data: [],
-                turboThreshold: 0,
-                color: Highcharts.getOptions().colors[0]
-            },
-            {
-                name: 'Heat Index',
-                type: 'spline',
-                data: [],
-                turboThreshold: 0,
-                color: Highcharts.getOptions().colors[1]
-            } 
-        ],
-    });
-
-    humidChart.value = Highcharts.chart('container0', {
-        chart: { zoomType: 'x' },
-        title: { text: 'Humidity Analysis', align: 'left' },
-        subtitle: { text: 'This chart shows the humidity levels over time, which impacts the perceived temperature.' },
-        yAxis: {
-            title: { text: 'Humidity', style: { color: '#000000' } },
-            labels: { format: '{value} %' }
-        },
-        xAxis: {
-            type: 'datetime',
-            title: { text: 'Time', style: { color: '#000000' } },
-        },
-        tooltip: {
-            shared: true,
-            pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
-        },
-        series: [
-            {
-                name: 'Humidity',
-                type: 'spline',
-                data: [], // Replace with actual dynamic data
-                turboThreshold: 0,
-                color: Highcharts.getOptions().colors[0]
-            }
-        ],
-    });
-
-    histogramChart.value = Highcharts.chart('container1', {
-        chart: { zoomType: 'x' },
-        title: { text: 'Frequency Distribution Analysis', align: 'left' },
-        subtitle: {
-          text: 'This chart shows the frequency distribution of Temperature, Humidity, and Heat Index.'
-        },
-        xAxis: {
-          title: { text: 'Temperature Ranges (°C)' }
-        },
-        yAxis: {
-          title: { text: 'Frequency', style: { color: '#000000' } },
-          labels: { format: '{value}' }
-        },
-        tooltip: {
-          shared: true,
-          pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
-        },
-        series: [
-          {
+tempHiChart.value = Highcharts.chart('container', {
+    chart: { zoomType: 'x', backgroundColor: '#2a2a22' },
+    title: { 
+        text: 'Air Temperature and Heat Index Analysis', 
+        align: 'left',
+        style: { color: '#FFFFFF' } 
+    },
+    subtitle: { 
+        text: 'The heat index, also known as the "apparent temperature," is a measure that combines air temperature and relative humidity to assess how hot it feels to the human body...',
+        style: { color: '#FFFFFF' }
+    },
+    yAxis: {
+        title: { text: 'Air Temperature & Heat Index', style: { color: '#FFFFFF' } },
+        labels: { format: '{value} °C', style: { color: '#FFFFFF' } }
+    },
+    xAxis: {
+        type: 'datetime',
+        title: { text: 'Time', style: { color: '#FFFFFF' } },
+        labels: { style: { color: '#FFFFFF' } }
+    },
+    legend: { itemStyle: { color: '#FFFFFF' } },
+    tooltip: { 
+        shared: true, 
+        pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
+    },
+    series: [
+        {
             name: 'Temperature',
-            type: 'column',
-            data: [], // Replace with actual data
+            type: 'spline',
+            data: [],
+            turboThreshold: 0,
             color: Highcharts.getOptions().colors[0]
-          },
-          {
-            name: 'Humidity',
-            type: 'column',
-            data: [], // Replace with actual data
-            color: Highcharts.getOptions().colors[1]
-          },
-          {
+        },
+        {
             name: 'Heat Index',
-            type: 'column',
-            data: [], // Replace with actual data
-            color: Highcharts.getOptions().colors[2]
-          }
-        ],
-    });
+            type: 'spline',
+            data: [],
+            turboThreshold: 0,
+            color: Highcharts.getOptions().colors[1]
+        } 
+    ],
+});
 
-    scatterPlot1.value = Highcharts.chart('container2', {
-        chart: { type: 'scatter', zoomType: 'x' },
-        title: { text: 'Temperature & Heat Index Correlation Analysis', align: 'left' },
-        subtitle: {
-          text: 'Visualize the relationship between Temperature and Heat Index as well as revealing patterns or trends in the data.'
-        },
-        xAxis: {
-          title: { text: 'Temperature' },
-          labels: { format: '{value} °C' },
-          startOnTick: true,
-          endOnTick: true,
-          showLastLabel: true
-        },
-        yAxis: {
-          title: { text: 'Heat Index' },
-          labels: { format: '{value} °C' },
-        },
-        tooltip: {
-          pointFormat: 'Temperature: {point.x} °C <br/> Heat Index: {point.y} °C'
-        },
-        plotOptions: {
-            scatter: {
-                marker: {
-                    radius: 2.5,
-                    symbol: 'circle',
-                    states: {
-                        hover: {
-                            enabled: true,
-                            lineColor: 'rgb(100,100,100)'
-                        }
-                    }
-                },
-                states: {
-                    hover: {
-                        marker: {
-                            enabled: false
-                        }
-                    }
-                },
-                jitter: {
-                    x: 0.005
-                }
-            }
-        },
-        series: [{
-          name: 'Analysis',
-          id: 'analysis',
-          data: [], // Use Humidity as x and Heat Index as y
-          marker: { symbol:'circle', radius: 5 }
-        }],
-    });
+humidChart.value = Highcharts.chart('container0', {
+    chart: { zoomType: 'x', backgroundColor: '#2a2a22' },
+    title: { text: 'Humidity Analysis', align: 'left', style: { color: '#FFFFFF' } },
+    subtitle: { 
+        text: 'This chart shows the humidity levels over time, which impacts the perceived temperature.',
+        style: { color: '#FFFFFF' }
+    },
+    yAxis: {
+        title: { text: 'Humidity', style: { color: '#FFFFFF' } },
+        labels: { format: '{value} %', style: { color: '#FFFFFF' } }
+    },
+    xAxis: {
+        type: 'datetime',
+        title: { text: 'Time', style: { color: '#FFFFFF' } },
+        labels: { style: { color: '#FFFFFF' } }
+    },
+    legend: { itemStyle: { color: '#FFFFFF' } },
+    tooltip: {
+        shared: true,
+        pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
+    },
+    series: [
+        {
+            name: 'Humidity',
+            type: 'spline',
+            data: [],
+            turboThreshold: 0,
+            color: Highcharts.getOptions().colors[0]
+        }
+    ],
+});
 
-    scatterPlot2.value = Highcharts.chart('container3', {
-        chart: { type: 'scatter', zoomType: 'x' },
-        title: { text: 'Humidity & Heat Index Correlation Analysis', align: 'left' },
-        subtitle: {
-          text: 'Visualize the relationship between Humidity and Heat Index as well as revealing patterns or trends in the data.'
-        },
-        xAxis: {
-          title: { text: 'Humidity' },
-          labels: { format: '{value} %' },
-          startOnTick: true,
-          endOnTick: true,
-          showLastLabel: true
-        },
-        yAxis: {
-          title: { text: 'Heat Index' },
-          labels: { format: '{value} °C' },
-        },
-        tooltip: {
-          pointFormat: 'Humidity: {point.x} % <br/> Heat Index: {point.y} °C'
-        },
-        plotOptions: {
-            scatter: {
-                marker: {
-                    radius: 2.5,
-                    symbol: 'circle',
-                    states: {
-                        hover: {
-                            enabled: true,
-                            lineColor: 'rgb(100,100,100)'
-                        }
-                    }
-                },
-                states: {
-                    hover: {
-                        marker: {
-                            enabled: false
-                        }
-                    }
-                },
-                jitter: {
-                    x: 0.005
-                }
+histogramChart.value = Highcharts.chart('container1', {
+    chart: { zoomType: 'x', backgroundColor: '#2a2a22' },
+    title: { text: 'Frequency Distribution Analysis', align: 'left', style: { color: '#FFFFFF' } },
+    subtitle: {
+      text: 'This chart shows the frequency distribution of Temperature, Humidity, and Heat Index.',
+      style: { color: '#FFFFFF' }
+    },
+    xAxis: {
+      title: { text: 'Temperature Ranges (°C)', style: { color: '#FFFFFF' } },
+      labels: { style: { color: '#FFFFFF' } }
+    },
+    yAxis: {
+      title: { text: 'Frequency', style: { color: '#FFFFFF' } },
+      labels: { format: '{value}', style: { color: '#FFFFFF' } }
+    },
+    legend: { itemStyle: { color: '#FFFFFF' } },
+    tooltip: {
+      shared: true,
+      pointFormat: 'Humidity: {point.x} % <br/> Temperature: {point.y} °C'
+    },
+    series: [
+      { name: 'Temperature', type: 'column', data: [], color: Highcharts.getOptions().colors[0] },
+      { name: 'Humidity', type: 'column', data: [], color: Highcharts.getOptions().colors[1] },
+      { name: 'Heat Index', type: 'column', data: [], color: Highcharts.getOptions().colors[2] }
+    ],
+});
+
+scatterPlot1.value = Highcharts.chart('container2', {
+    chart: { type: 'scatter', zoomType: 'x', backgroundColor: '#2a2a22' },
+    title: { text: 'Temperature & Heat Index Correlation Analysis', align: 'left', style: { color: '#FFFFFF' } },
+    subtitle: {
+      text: 'Visualize the relationship between Temperature and Heat Index...',
+      style: { color: '#FFFFFF' }
+    },
+    xAxis: {
+      title: { text: 'Temperature', style: { color: '#FFFFFF' } },
+      labels: { format: '{value} °C', style: { color: '#FFFFFF' } },
+      startOnTick: true,
+      endOnTick: true,
+      showLastLabel: true
+    },
+    yAxis: {
+      title: { text: 'Heat Index', style: { color: '#FFFFFF' } },
+      labels: { format: '{value} °C', style: { color: '#FFFFFF' } },
+    },
+    legend: { itemStyle: { color: '#FFFFFF' } },
+    tooltip: {
+      pointFormat: 'Temperature: {point.x} °C <br/> Heat Index: {point.y} °C'
+    },
+    plotOptions: {
+        scatter: {
+            marker: {
+                radius: 2.5,
+                symbol: 'circle',
+                states: { hover: { enabled: true, lineColor: 'rgb(100,100,100)' } }
             }
-        },
-        series: [{
-          name: 'Analysis',
-          id: 'analysis',
-          data: [], // Use Humidity as x and Heat Index as y
-          marker: { symbol:'circle', radius: 5 }
-        }],
-    });
+        }
+    },
+    series: [{
+      name: 'Analysis',
+      id: 'analysis',
+      data: [],
+      marker: { symbol:'circle', radius: 5 }
+    }],
+});
+
+scatterPlot2.value = Highcharts.chart('container3', {
+    chart: { type: 'scatter', zoomType: 'x', backgroundColor: '#2a2a22' },
+    title: { text: 'Humidity & Heat Index Correlation Analysis', align: 'left', style: { color: '#FFFFFF' } },
+    subtitle: {
+      text: 'Visualize the relationship between Humidity and Heat Index...',
+      style: { color: '#FFFFFF' }
+    },
+    xAxis: {
+      title: { text: 'Humidity', style: { color: '#FFFFFF' } },
+      labels: { format: '{value} %', style: { color: '#FFFFFF' } },
+      startOnTick: true,
+      endOnTick: true,
+      showLastLabel: true
+    },
+    yAxis: {
+      title: { text: 'Heat Index', style: { color: '#FFFFFF' } },
+      labels: { format: '{value} °C', style: { color: '#FFFFFF' } },
+    },
+    legend: { itemStyle: { color: '#FFFFFF' } },
+    tooltip: {
+      pointFormat: 'Humidity: {point.x} % <br/> Heat Index: {point.y} °C'
+    },
+    plotOptions: {
+        scatter: {
+            marker: {
+                radius: 2.5,
+                symbol: 'circle',
+                states: { hover: { enabled: true, lineColor: 'rgb(100,100,100)' } }
+            }
+        }
+    },
+    series: [{
+      name: 'Analysis',
+      id: 'analysis',
+      data: [],
+      marker: { symbol:'circle', radius: 5 }
+    }],
+});
 };
 
 const updateLineCharts = async ()=>{
